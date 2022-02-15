@@ -1,0 +1,11 @@
+[package]
+name = "blueprint-proc"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "1.0", features = ["derive"] }
+quote = { version = "1.0" }
