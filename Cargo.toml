@@ -21,6 +21,3 @@ default = ["alloc"]
 blueprint-proc = { version = "0.0.0", path = "proc", optional = true }
 regex = { version = "1.5", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
-
-[dev-dependencies]
-serde_json = "*"
