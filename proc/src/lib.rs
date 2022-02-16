@@ -8,9 +8,11 @@ use syn::{self, spanned::Spanned};
 pub fn blueprinted_derive(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as syn::DeriveInput);
 
+    let (impl_generics, type_generics, where_clause) = input.generics.split_for_impl();
+
     match &input.data {
         syn::Data::Union(data) => {
-            return quote::quote_spanned!(data.union_token.span() => ::core::compile_error!("Union types are not blueprintable")).into();
+            return quote::quote_spanned!(data.union_token.span() => ::core::compile_error!("Union are not supported")).into();
         }
         syn::Data::Struct(data) => {
             let ident = &input.ident;
@@ -22,7 +24,7 @@ pub fn blueprinted_derive(input: TokenStream) -> TokenStream {
                         impl ::blueprint::Blueprinted for #ident {
                             const BLUEPRINT: &'static ::blueprint::Blueprint<'static> = &::blueprint::Blueprint {
                                 name: ::blueprint::RefBox::Ref(#name),
-                                schema: ::blueprint::BlueprintSchema::Unit,
+                                kind: ::blueprint::BlueprintKind::Unit,
                             };
                         }
                     }
@@ -42,10 +44,10 @@ pub fn blueprinted_derive(input: TokenStream) -> TokenStream {
                     });
 
                     quote::quote_spanned! { input.span() =>
-                        impl ::blueprint::Blueprinted for #ident {
+                        impl #impl_generics ::blueprint::Blueprinted for #ident #type_generics #where_clause {
                             const BLUEPRINT: &'static ::blueprint::Blueprint<'static> = &::blueprint::Blueprint {
                                 name: ::blueprint::RefBox::Ref(#name),
-                                schema: ::blueprint::BlueprintSchema::Struct(::blueprint::StructBlueprint {
+                                kind: ::blueprint::BlueprintKind::Struct(::blueprint::StructBlueprint {
                                     fields: ::blueprint::RefBox::Ref(&[
                                         #( #fields, )*
                                     ]),
@@ -65,10 +67,10 @@ pub fn blueprinted_derive(input: TokenStream) -> TokenStream {
                     });
 
                     quote::quote_spanned! { input.span() =>
-                        impl ::blueprint::Blueprinted for #ident {
+                        impl #impl_generics ::blueprint::Blueprinted for #ident #type_generics #where_clause {
                             const BLUEPRINT: &'static ::blueprint::Blueprint<'static> = &::blueprint::Blueprint {
                                 name: ::blueprint::RefBox::Ref(#name),
-                                schema: ::blueprint::BlueprintSchema::Tuple( ::blueprint::TupleBlueprint {
+                                kind: ::blueprint::BlueprintKind::Tuple( ::blueprint::TupleBlueprint {
                                     elements: ::blueprint::RefBox::Ref(&[
                                         #( #fields, )*
                                     ]),
@@ -89,7 +91,7 @@ pub fn blueprinted_derive(input: TokenStream) -> TokenStream {
                         quote::quote_spanned! { input.span() =>
                             ::blueprint::VariantBlueprint {
                                 name: ::blueprint::RefBox::Ref(#variant_name),
-                                schema: ::blueprint::VariantBlueprintSchema::Unit,
+                                kind: ::blueprint::VariantBlueprintKind::Unit,
                             }
                         }
                     }
@@ -110,7 +112,7 @@ pub fn blueprinted_derive(input: TokenStream) -> TokenStream {
                         quote::quote_spanned! { input.span() =>
                             ::blueprint::VariantBlueprint {
                                 name: ::blueprint::RefBox::Ref(#variant_name),
-                                schema: ::blueprint::VariantBlueprintSchema::Struct(::blueprint::StructBlueprint {
+                                kind: ::blueprint::VariantBlueprintKind::Struct(::blueprint::StructBlueprint {
                                     fields: ::blueprint::RefBox::Ref(&[
                                         #( #fields, )*
                                     ]),
@@ -131,7 +133,7 @@ pub fn blueprinted_derive(input: TokenStream) -> TokenStream {
                         quote::quote_spanned! { input.span() =>
                             ::blueprint::VariantBlueprint {
                                 name: ::blueprint::RefBox::Ref(#variant_name),
-                                schema: ::blueprint::VariantBlueprintSchema::Tuple( ::blueprint::TupleBlueprint {
+                                kind: ::blueprint::VariantBlueprintKind::Tuple( ::blueprint::TupleBlueprint {
                                     elements: ::blueprint::RefBox::Ref(&[
                                         #( #fields, )*
                                     ]),
@@ -145,10 +147,10 @@ pub fn blueprinted_derive(input: TokenStream) -> TokenStream {
             let name = syn::LitStr::new(&ident.to_string(), input.ident.span());
 
             quote::quote_spanned! { input.span() =>
-                impl ::blueprint::Blueprinted for #ident {
+                impl #impl_generics ::blueprint::Blueprinted for #ident #type_generics #where_clause {
                     const BLUEPRINT: &'static ::blueprint::Blueprint<'static> = &::blueprint::Blueprint {
                         name: ::blueprint::RefBox::Ref(#name),
-                        schema: ::blueprint::BlueprintSchema::Enum( ::blueprint::EnumBlueprint {
+                        kind: ::blueprint::BlueprintKind::Enum( ::blueprint::EnumBlueprint {
                             variants: ::blueprint::RefBox::Ref(&[
                                 #( #variants, )*
                             ]),
