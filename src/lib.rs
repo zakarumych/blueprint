@@ -325,7 +325,8 @@ impl fmt::Display for RealBlueprint {
 /// Includes limits on length.
 /// May have optimal regex.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub struct StringBlueprint<'a> {
     /// Regex for the string value.
     #[cfg_attr(
@@ -389,7 +390,8 @@ impl fmt::Display for StringBlueprint<'_> {
 /// Kind of blueprint for sequences.
 /// Includes limits on length.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub struct SequenceBlueprint<'a> {
     /// Blueprint of the sequence elements.
     /// Typically derived from element's type.
@@ -436,7 +438,8 @@ impl fmt::Display for SequenceBlueprint<'_> {
 /// Kind of blueprint for mappings.
 /// Includes limits on entires number.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub struct MappingBlueprint<'a> {
     /// Blueprint for keys.
     pub key: RefBox<'a, Blueprint<'a>>,
@@ -508,7 +511,8 @@ impl fmt::Display for MappingBlueprint<'_> {
 
 /// Kind of blueprint for tuples.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub struct TupleBlueprint<'a> {
     /// Blueprints for elements of the tuple.
     #[cfg_attr(
@@ -539,7 +543,8 @@ impl fmt::Display for TupleBlueprint<'_> {
 
 /// Kind of blueprint for structures.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub struct StructBlueprint<'a> {
     /// Names and blueprints of the fields.
     #[cfg_attr(
@@ -570,7 +575,8 @@ impl fmt::Display for StructBlueprint<'_> {
 
 /// Kind of blueprint for enums.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub struct EnumBlueprint<'a> {
     /// Names and blueprints of the variants.
     #[cfg_attr(
@@ -601,7 +607,8 @@ impl fmt::Display for EnumBlueprint<'_> {
 
 /// Kinds of blueprints.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub enum BlueprintKind<'a> {
     /// Blueprint of the unit type.
     Unit,
@@ -682,7 +689,8 @@ impl BlueprintKind<'_> {
 
 /// Blueprint for named field.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub struct FieldBlueprint<'a> {
     /// Name of the field.
     pub name: RefBox<'a, str>,
@@ -701,7 +709,8 @@ impl fmt::Display for FieldBlueprint<'_> {
 
 /// Blueprint for enum variant.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub struct VariantBlueprint<'a> {
     /// Variant name.
     pub name: RefBox<'a, str>,
@@ -718,7 +727,8 @@ impl fmt::Display for VariantBlueprint<'_> {
 
 /// Blueprint for named field.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(all(feature = "alloc", feature = "serde"), derive(serde::Deserialize))]
 pub enum VariantBlueprintKind<'a> {
     /// Blueprint of the unit enum variant.
     Unit,
@@ -777,7 +787,6 @@ macro_rules! for_string {
     ($string:ident) => {
         for_sized!($string {
             kind: BlueprintKind::String(StringBlueprint {
-                #[cfg(feature = "regex")]
                 regex: None,
                 min_len: 0,
                 max_len: usize::MAX,
@@ -786,6 +795,7 @@ macro_rules! for_string {
     };
 }
 
+#[cfg(feature = "alloc")]
 macro_rules! for_sequence {
     ($sequence:ident<T>) => {
         for_sized!($sequence<T> {
@@ -934,11 +944,13 @@ fn is_default_max_real(max: &f64) -> bool {
     *max == default_max_real()
 }
 
+#[cfg(feature = "serde")]
 #[inline]
 fn is_default_min_size(min: &usize) -> bool {
     *min == default_min_size()
 }
 
+#[cfg(feature = "serde")]
 #[inline]
 fn is_default_max_size(max: &usize) -> bool {
     *max == default_max_size()
@@ -954,16 +966,19 @@ fn default_max_real() -> f64 {
     f64::INFINITY
 }
 
+#[cfg(feature = "serde")]
 #[inline]
 fn default_min_size() -> usize {
     0
 }
 
+#[cfg(feature = "serde")]
 #[inline]
 fn default_max_size() -> usize {
     usize::MAX
 }
 
+#[cfg(all(feature = "alloc", feature = "serde"))]
 #[inline]
 fn default_refbox_slice<'a, T>() -> RefBox<'a, [T]> {
     RefBox::Ref(&[])
